@@ -194,11 +194,8 @@ This method makes query processing faster, at the cost of increased computationa
 
 We  here propose an adaptation of \lambdamart~\cite{wu2010lambdamart}, a gradient boosting algorithm, to compute the UTIs of each term at the indexing time. \lambdamart\ was designed specifically to optimize ranking quality metrics, such as NDCG, and was shown to be very effective in traditional (i.e. query-time) L2R tasks. We show experiments where  our adaptation of \lambdamart achieves results in 2.8\% of the time required by \lepref using GP without lost of quality. Further, the use of UTI with \lambdamart produces results on pair with the ones produced by state-of-art learning to rank methods.
 
-
 In here, we improve the work done on \lepref\ in three ways. First, we significantly reduce the required training time. Second, by carefully tuning the algorithm, we are able to achieve higher quality search results. Finally, using a simple compression procedure, we are able to greatly reduce the space requirements of the inverted index, without any significant loss in search quality. In the remainder of this text, we refer this 
 proposed approach as UTI-LambdaMART. We present experiments to compare the performance of UTI-LambdaMART with UTI using GP.
-
-
 
 The issues related to combining efficiency and effectiveness in learning to rank have been recently addressed in the literature. Chen et al.~\cite{Chen2017} study  the importance of tightly integrating feature costs into multi-stage L2R IR systems. They present an approach to optimize cascaded ranking models  which provides a better balance between efficiency and quality of ranking results.  The study proposed here can be combined with the cascade strategy proposed by them, since the UTI approaches can be  incorporated in any cascade ranking strategy.
 
@@ -215,7 +212,7 @@ Lucchese et al.~\cite{Lucchese2016}  propose a  framework, named CLEaVER, for op
 \newcommand{\lamdamart}{LambdaMART}
 
 The \lambdamart\ algorithm~\cite{wu2010lambdamart} is a combination of
-MART, a L2R method that adopts a boosted tree model, and LambdaRANK,
+MART~\cite{Jerome2001}, a L2R method that adopts a boosted tree model, and LambdaRank~\cite{Burges2006},
 another L2R method that adopts a neural network model. It is
 particularly interesting for our work since it allows us to directly
 optimize a rank quality measure, such as precision or NDCG. We will
@@ -289,7 +286,7 @@ This score consists of summing each terms individual UTI, using the model $Ft_{n
 
 Using the scores thus computed, we can estimate the difference in NDCG obtained by switching the order of every pair of documents in a query results list ($\Delta NDCG$), this is performed only when the relevance score in the training for $d_j$ is higher than the relevance score for $d_k$. $\Delta NDCG$ is then used  to compute the lambda and weight values associated with each term document and query ($\lambda[t,d,q]$ and $w[t,d,q]$, respectively) in lines 11--17,.
 
-Finally, in lines 21--24 the original \lambdamart\ steps of finding the regression trees and updating the model are executed, and the model $Ft_n$ is updated. See the original method~\cite{BLA} for further details about these final steps.
+Finally, in lines 21--24 the original \lambdamart\ steps of finding the regression trees and updating the model are executed, and the model $Ft_n$ is updated. See the original method~\cite{wu2010lambdamart} for further details about these final steps.
  
  %\item{Line 5.a):This is a new step and contains the main changes made in the original LambdaMART algorithm. Before training a new regression tree, fist we sum the UTIs of all the terms of the same query-document according to the current model $F_{n-1}$ and after order the results documents considering a unique document score.} 
  %\item{Line 5.b): In this step, we compute the lambdas, the gradients of the cost related to the model scores, for each pair of documents in the query; To compute the Lambdas, LambdaMART works like LambdaRank, for each document training pair $(j,k)$ the $\lambda(j,k)$ is computed. If document $k$ is ranked lower than document $j$, than both receive the same amount of $\lambda(j,k)$ with opposite signs.This means that $j$ receive a value up and $k$ a value down and represents how stronger each one is in the rank. This step is conceptually the same in LePrEF GBRT, the change is that the $\lambda$ value is assigned for each document-term. All learning is based in instances by term, and the score is used directly in the inverted list.}
@@ -392,15 +389,26 @@ We also compared the performance of  UTI-LambdaMART and BM25  being used as base
 
 This results is interesting to show how we can employ  UTI-LambdaMART in practical web search and the potential benefit that can be achieved by UTI-LambdaMART. It results the amount of features to be fetched and computed at query  processing times and reduces the number of top results that should be inspected by the top ranker when compared to a traditional approach that uses a simpler base ranker, as BM25.
 
-\begin{figure}[h!]
-\begin{center}
-\includegraphics[width=10cm, height=5cm]{im_ndcg10leprefbm25.png}
-\caption{LambdaMART: Comparison results with BM25 base ranker and LePrEF base ranker}
-\label{fig:bm25}
-\end{center}
-\end{figure}
+%\begin{figure}[h!]
+%\begin{center}
+%\includegraphics[width=10cm, height=5cm]{im_ndcg10leprefbm25.png}
+%\caption{LambdaMART: Comparison results with BM25 base ranker and LePrEF base ranker}
+%\label{fig:bm25}
+%\end{center}
+%\end{figure}
 
 }
+
+\begin{figure*}[h!]
+\centering
+	\subfigure[LambdaMART: Comparison results with BM25 base ranker and LePrEF base ranker]{
+	\includegraphics[width=0.46\textwidth]{im_ndcg10leprefbm25.png}
+	\label{fig:bm25}}
+	\subfigure[Compression rate achieved by applying Elias-$\delta$ to the UTI values produced by UTI-LambdaMART in the  index when (CR) x NDCG@10;]{
+	\includegraphics[width=0.46\textwidth]{im_cr_ndcg_lambda.png}
+	\label{fig:crq}}
+\end{figure*}
+
 
 \subsection{Compressing the UTIs}
 \label{sec:compression} 
@@ -409,13 +417,13 @@ A common approach for improving search engine time and space efficiency is to co
 
  Figure~\ref{fig:crq} shows the compression rates achieved when varying the number of digits truncated in the UTI number. As a reference to compute the compression rate, we adopted that each UTI number would be represented as a 32 bits floating point number without compression. As can be seen,  there is indeed a trade-off between quality and compression rate as we vary the number of decimal point values truncated when transforming real values of UTI into integer values. Results truncating the number with only $1$ digit presents a small reduction in NDCG quality while achieve a high compression rate. When using zero digits, we see a negative impact in the NDCG values, indicating that the best alternative in the experiments with LETOR would be to truncate UTI values in 1 digit.
 
-\begin{figure}[h!]
-\begin{center}
-\includegraphics[width=10cm, height=5cm]{im_cr_ndcg_lambda.png}
-\caption{Compression rate achieved by applying Elias-$\delta$ to the UTI values produced by UTI-LambdaMART in the  index when (CR) x NDCG@10}
-\label{fig:crq}
-\end{center}
-\end{figure}
+%\begin{figure}[h!]
+%\begin{center}
+%\includegraphics[width=10cm, height=5cm]{im_cr_ndcg_lambda.png}
+%\caption{Compression rate achieved by applying Elias-$\delta$ to the UTI values produced by UTI-LambdaMART in the  index when (CR) x NDCG@10}
+%\label{fig:crq}
+%\end{center}
+%\end{figure}
 
 %\begin{figure*}[h!]
 %\centering
