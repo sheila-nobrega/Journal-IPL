@@ -94,14 +94,13 @@
 % first the title is needed
 \title{Gradient Boosting to Precompute Multiple Signals in Search Index Construction}
 
-\author[mymainaddress]{Sheila Silva}
+\author[mymainaddress]{Sheila N{\'obrega}}
 \author[mymainaddress]{Edleno Moura}
 \author[mysecondaryaddress]{P{\'a}vel Calado}
 \author[mymainaddress]{Altigran Silva}
 
 \address[mymainaddress]{Universidade Federal do Amazonas, Brasil}
 \address[mysecondaryaddress]{INESC-ID, Instituto Superior T{\'e}cnico, Universidade de Lisboa}
-
 
 \begin{abstract}
 
@@ -340,144 +339,320 @@ As L2R implementation,  we adopted the QuickRank \cite{capannini2016quality}, a 
 \section{Results}
 \label{results}
 
- Table~\ref{tab:baseline} shows the values of NDCG  achieved by L2R methods reported in LETOR (Rankboost, ListNet, AdaRank and RankSVM), by  LambdaMART,  by the  baseline UTI-GP~\cite{costa2012lepref} and our model UTI-LambdaMART. There is almost not difference in the mean NDCG achieved by the compared L2R methods. This result shows that, at least in the LETOR dataset, the the UTI methods achieve results comparable to other L2R methods, in spite of using only features available at indexing time. This result, combined with the advantage of simplified the ranking and avoiding the access to several features at query time, makes the UTI methods the best choice for processing queries in collections as LETOR.
+Table~\ref{tab:baseline} shows the values of NDCG achieved by L2R
+methods reported in LETOR (Rankboost, ListNet, AdaRank and RankSVM),
+by LambdaMART, by the baseline UTI-GP~\cite{costa2012lepref} and our
+model UTI-LambdaMART. The differences in the mean NDCG achieved by the
+compared L2R methods are quite small, being smaller than 0.015 from
+the best method to the worse. We applied t-test to check whether there
+is statistical significance between the results achieved by
+\lambdamart, UTI-LambdaMART and UTI-GP. In all cases there was no
+statistically significant difference. This result shows that, at least
+in the LETOR dataset, the UTI methods achieve results comparable
+to other L2R methods, in spite of using only features available at
+indexing time. This result, combined with the advantage of reducing
+the cost to compute the ranking and avoiding the access to several
+features at query time, makes the UTI methods a very competitive
+choice for processing queries in collections as LETOR.
+
 
 \begin{table}
-\caption{Mean NDCG  results obtained by UTI-LambdaMART compared to several L2R methods.}
+
+\caption{Mean NDCG results obtained by UTI-LambdaMART compared to
+several L2R methods.}
+
 \label{tab:baseline}
+
 \begin{center}
+
 \begin{tabular}{|c|l|}
- \hline
- \textbf{Method} & \textbf{MeanNDCG} \\ 
- \hline\hline
- AdaRank & 0.4914 \\
- \hline
- UTI-GP & 0.4959 \\ 
- \hline
- RankSVM & 0.4966  \\ 
- \hline
- UTI-LambdaMART & 0.4971 \\ 
- \hline
- ListNet & 0.4988 \\
- \hline
- RankBoost & 0.5003 \\
- \hline
- LambdaMART & 0.5048 \\ 
- \hline
+
+\hline
+
+\textbf{Method} & \textbf{MeanNDCG} \\
+
+\hline\hline
+
+AdaRank & 0.491 \\
+
+\hline
+
+UTI-GP & 0.496\\
+
+\hline
+
+RankSVM & 0.497 \\
+
+\hline
+
+UTI-LambdaMART & 0.497 \\
+
+\hline
+
+ListNet & 0.499 \\
+
+\hline
+
+RankBoost & 0.500 \\
+
+\hline
+
+LambdaMART & 0.505 \\
+
+\hline
+
 \end{tabular}
+
 \end{center}
+
 \end{table}
 
 
-From Table~\ref{tab:baseline}, we can conclude that the quality results produced by  UTI-LambdaMART and UTI-GP are similar. However,  the time required for training in UTI-LambdaMART is by fair smaller than the time required for training in UTI-GP. For instance, in our experiments UTI-GP model has taken about 3 hours to run the training phase following the approach described by the authors˜\cite{costa2012lepref}, while  UTI-LambdaMART has taken  only about 5 minutes. 
+
+From Table~\ref{tab:baseline}, we can see that the quality of results
+produced by UTI-LambdaMART and UTI-GP are almost similar. However, the
+time required for training in UTI-LambdaMART is by fair smaller than
+the time required for training in UTI-GP. For instance, in our
+experiments UTI-GP model has taken about 3 hours to run the training
+phase following the approach described by the
+authors˜\cite{costa2012lepref}, while UTI-LambdaMART has taken only
+about 5 minutes.
+
 
 
 \begin{figure}[h!]
+
 \begin{center}
+
 \includegraphics[width=10cm, height=5cm]{im_ndcg_baseline.png}
+
 \caption{Comparison Results with NDCG@1~10 on MQ2007}
+
 \label{fig:ncdg10}
+
 \end{center}
+
 \end{figure}
 
-{\bf
-ESSA FIGURA AGUARDANDO SHEILA TERMINAR O EXPERIMENTO. PARA COMENTAR
+We also compared the performance of UTI-LambdaMART and BM25 being used
+as base rankers combined with LambdaMART as the top ranker. While in
+LETOR there is almost no difference between UTI methods and other
+learning methods, in practice search engines may contain other
+important features available only at query processing times, such as
+clicks performed by the users in the top results or personalized
+information about each user. Figure~\ref{fig:bm25} compares the
+performance of the two alternative base rankers when varying the size
+of top results taken from each alternative. As smaller is the number
+of top results we need to look in order to achieve high quality
+results, as better is the top ranker. As it can be seen,
+UTI-LambdaMART outperforms BM25 as a base ranker. For instance, taking
+2 results we achieve value of NDCG close to 0.56 when using
+UTI-LambdaMART, while to achieve the same quality with BM25 we need to
+take 9 top results. With 3 results the UTI base rankers outperform the
+results of BM25 as top ranker.
 
+This results is interesting to show how we can employ UTI-LambdaMART
+in practical web search scenarios as a base ranker. It reduces the
+amount of features to be fetched and computed at query processing
+times and reduces the number of top results that should be inspected
+by the top ranker when compared to a traditional approach that uses a
+simpler base ranker, as BM25. This combination means practical gains
+in performance that depend on the architecture and feature sets
+adopted by each system.
 
-We also compared the performance of  UTI-LambdaMART and BM25  being used as base rankers combined with LambdaMART as the top ranker. While in LETOR the is almost no difference between UTI methods and other learning methods, in practice search engines may contain other important features available only at query processing times, such as clicks performed by the users in links or personalized information about each user.  Figure~\ref{fig:bm25} compares the performance of the two alternative base rankers when varying the size of top results taken from each alternative. As smaller is the number of top results we need to take to achieve high quality results, as better is the top ranker. As it can be seen, UTI-LambdaMART outperforms  BM25 as a base ranker. For instance, taking XX results we achieve YY value of NDCG when using UTI-LambdaMART, while to achieve the same quality with BM25 we need to take ZZ top results.
-
-
-This results is interesting to show how we can employ  UTI-LambdaMART in practical web search and the potential benefit that can be achieved by UTI-LambdaMART. It results the amount of features to be fetched and computed at query  processing times and reduces the number of top results that should be inspected by the top ranker when compared to a traditional approach that uses a simpler base ranker, as BM25.
 
 %\begin{figure}[h!]
+
 %\begin{center}
+
 %\includegraphics[width=10cm, height=5cm]{im_ndcg10leprefbm25.png}
+
 %\caption{LambdaMART: Comparison results with BM25 base ranker and LePrEF base ranker}
+
 %\label{fig:bm25}
+
 %\end{center}
+
 %\end{figure}
 
-}
+
+%}
+
 
 \begin{figure*}[h!]
 \centering
-	\subfigure[LambdaMART: Comparison results with BM25 base ranker and LePrEF base ranker]{
-	\includegraphics[width=0.46\textwidth]{im_ndcg10leprefbm25.png}
-	\label{fig:bm25}}
-	\subfigure[Compression rate achieved by applying Elias-$\delta$ to the UTI values produced by UTI-LambdaMART in the  index when (CR) x NDCG@10;]{
-	\includegraphics[width=0.46\textwidth]{im_cr_ndcg_lambda.png}
-	\label{fig:crq}}
+
+\subfigure[LambdaMART: Comparison results with BM25 base ranker and LePrEF base ranker]{
+\includegraphics[width=0.5\textwidth]{im_ndcg10leprefbm25.png}
+\label{fig:bm25}}
+
+\subfigure[Compression rate achieved by applying Elias-$\delta$ to the UTI values produced by UTI-LambdaMART in the index compared with the NDCG@10;]{
+\includegraphics[width=0.5\textwidth]{im_cr_ndcg_lambda.png}
+\label{fig:crq}}
+
 \end{figure*}
 
 
 \subsection{Compressing the UTIs}
-\label{sec:compression} 
 
-A common approach for improving search engine time and space efficiency is to compress the inverted index~\cite{baezaribeiro2011modinforet}. To this effect, we experimented with truncating the UTI values generated to an integer value. We performed UTI-LambdaMART with real values and then process the discretization in final results when storing  the inverted list. This simple strategy achieved satisfactory results with practically no variation in quality. Without loss of generality, for the experiments to compress the UTI values, we adopted the \textit{Elias Delta codes}~\cite{elias1975universal}, a technique that has been adopted not only in LePrEF, but also in other past research articles that addressed the topic of compressing inverted indexes.
+\label{sec:compression}
 
- Figure~\ref{fig:crq} shows the compression rates achieved when varying the number of digits truncated in the UTI number. As a reference to compute the compression rate, we adopted that each UTI number would be represented as a 32 bits floating point number without compression. As can be seen,  there is indeed a trade-off between quality and compression rate as we vary the number of decimal point values truncated when transforming real values of UTI into integer values. Results truncating the number with only $1$ digit presents a small reduction in NDCG quality while achieve a high compression rate. When using zero digits, we see a negative impact in the NDCG values, indicating that the best alternative in the experiments with LETOR would be to truncate UTI values in 1 digit.
+
+A common approach for improving search engine time and space
+efficiency is to compress the inverted
+index~\cite{baezaribeiro2011modinforet}. To this effect, we
+experimented with truncating the UTI values generated to an integer
+value. We performed UTI-LambdaMART with real values and then process
+the discretization in final results when storing the inverted list.
+This simple strategy achieved satisfactory results with practically no
+variation in quality. Without loss of generality, for the experiments
+to compress the UTI values, we adopted the \textit{Elias Delta
+codes}~\cite{elias1975universal}, a technique that has been adopted
+not only in LePrEF, but also in other past research articles that
+addressed the topic of compressing inverted indexes.
+
+
+Figure~\ref{fig:crq} shows the compression rates achieved when varying
+the number of digits truncated in the UTI number. As a reference to
+compute the compression rate, we adopted that each UTI number would be
+represented as a 32 bits floating point number without compression. As
+can be seen, there is indeed a trade-off between quality and
+compression rate as we vary the number of decimal point values
+truncated when transforming real values of UTI into integer values.
+Results truncating the number with only $1$ digit presents a small
+reduction in NDCG quality while achieves a high compression rate. When
+using zero digits, we see a clear negative impact in the NDCG values,
+indicating that the best alternative in the experiments with LETOR
+would be to truncate UTI values to 1 decimal digit.
+
 
 %\begin{figure}[h!]
+
 %\begin{center}
+
 %\includegraphics[width=10cm, height=5cm]{im_cr_ndcg_lambda.png}
-%\caption{Compression rate achieved by applying Elias-$\delta$ to the UTI values produced by UTI-LambdaMART in the  index when (CR) x NDCG@10}
+
+%\caption{Compression rate achieved by applying Elias-$\delta$ to the UTI values produced by UTI-LambdaMART in the index when (CR) x NDCG@10}
+
 %\label{fig:crq}
+
 %\end{center}
+
 %\end{figure}
 
+
 %\begin{figure*}[h!]
+
 %\centering
-%	\subfigure[UTI without compression. 235.234 distinct values. 213.140 unique %values]{%
-%	\includegraphics[width=0.4\textwidth]{im_distribuicao_uti_lambda_normal.png}
-%	\label{fig:dln}}%
-%	\subfigure[UTI with compression. 47 distinct values; 2 unique values;]{%
-%	\includegraphics[width=0.4\textwidth]{im_distribuicao_uti_lambda_1casa.png}
-%	\label{fig:dlc}}
-	% 
-%	\caption{Distribution of 272.140 UTI values for 5 folds without compression (a) and with compression (b).}
-%	\label{fig:compareData}
+
+% \subfigure[UTI without compression. 235.234 distinct values. 213.140 unique %values]{%
+
+% \includegraphics[width=0.4\textwidth]{im_distribuicao_uti_lambda_normal.png}
+
+% \label{fig:dln}}%
+
+% \subfigure[UTI with compression. 47 distinct values; 2 unique values;]{%
+
+% \includegraphics[width=0.4\textwidth]{im_distribuicao_uti_lambda_1casa.png}
+
+% \label{fig:dlc}}
+
+%
+
+% \caption{Distribution of 272.140 UTI values for 5 folds without compression (a) and with compression (b).}
+
+% \label{fig:compareData}
+
 %\end{figure*}
 
 
+
 %\begin{figure}
+
 %\begin{center}
+
 %\includegraphics[width=7cm, height=7cm]{im_baselineLePrEF.png}
+
 %\caption{NDCG@10 result obtained by LambdaMART and CA when performed using BM25 and LePrEF as %first ranking.}
+
 %\label{fig:lfr}
+
 %\end{center}
+
 %\end{figure}
 
+
 %% References
+
 %%
+
 %% Following citation commands can be used in the body text:
+
 %% Usage of \cite is as follows:
-%%   \cite{key}         ==>>  [#]
-%%   \cite[chap. 2]{key} ==>> [#, chap. 2]
+
+%% \cite{key} ==>> [#]
+
+%% \cite[chap. 2]{key} ==>> [#, chap. 2]
+
 %%
+
 
 %% References with bibTeX database:
 
-\section{Conclusion}
-The experimental results presented in this work indicate that UTI-LambdaMART achieves better quality results when compared with UTI-GP. We achieved higher compression results than those achieved by \cite{costa2012lepref} with a significant reduction training time and achieving comparable quality of results. 
 
-We also investigated two scenarios where UTI values  can be used in a practical web search, considering both, the use of UTI-LambdaMART as the base  ranker and using UTI-LambdaMART as top ranker. In the first, UTI values are able to produce high quality first cut rankings that are closer to the final document order, which  reduces the amount of documents necessary to be inspected in the top ranker, resulting in gains of performance. In second scenario, UTI-LambdaMART is directly applied as the top ranker, and we show that, even taking only features available at indexing times, it produces rankings with quality closer  to learn to rank  methods adopted at query processing times, but with the advantage of reducing the time to process queries.
+\section{Conclusion}
+
+The experimental results presented in this work indicate that
+UTI-LambdaMART produces quality results closer to the ones produced by
+UTI-GP, while significantly reduces the time required for learning the
+model. Further, in the experiments with LETOR, we achieved higher
+compression results than those achieved by \cite{costa2012lepref}.
+
+
+We also investigated two scenarios where UTI values can be used in a
+practical web search, considering both, the use of UTI-LambdaMART as
+the base ranker and using UTI-LambdaMART as top ranker. In the first,
+UTI values are able to produce high quality first cut rankings that
+are closer to the final document order, reducing the amount of
+documents necessary to be inspected in the top ranker, and resulting
+in gains of performance. In the second scenario, UTI-LambdaMART is
+directly applied as the top ranker, and we show that, even taking only
+features available at indexing times, it produces rankings with
+quality closer to learn to rank methods adopted at query processing
+times, but with the advantage of adopting a very simple ranking
+strategy at query processing times.
+
 
 \label{conclusion}
 
 
+
 \bibliographystyle{elsarticle-num}
+
 % \bibliographystyle{elsarticle-harv}
+
 % \bibliographystyle{elsarticle-num-names}
+
 % \bibliographystyle{model1a-num-names}
+
 % \bibliographystyle{model1b-num-names}
+
 % \bibliographystyle{model1c-num-names}
+
 % \bibliographystyle{model1-num-names}
+
 % \bibliographystyle{model2-names}
+
 % \bibliographystyle{model3a-num-names}
+
 % \bibliographystyle{model3-num-names}
+
 % \bibliographystyle{model4-names}
+
 % \bibliographystyle{model5-names}
+
 % \bibliographystyle{model6-num-names}
+
 
 \bibliography{sample}
 
