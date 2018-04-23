@@ -201,9 +201,9 @@ The remaining of this article is organized as follows. In Section~\ref{relatedwo
 
 %A key concept in any search engine architecture is the set of \emph{sources of relevance evidence adopted} for ranking query results. We define a source of relevance evidence as any information that can be extracted from the document collection to contribute to rank query answers according to the user's interest. For example, common sources of evidence used by Web search engines include the pages' content, anchor text, url text, title, image descriptions, among others. All these can be used to infer if a webpage is relevant to the user's query or not. This information is translated into numerical values that are either computed at query time, or stored in search engine indexes. Values computed at query time usually represent information that depends both on the query and the document, such as the TF-IDF term weight, the cosine similarity between the query and the document, etc. Values stored in inverted indexes usually represent information that depends only on the documents, such as the term frequency values, PageRank values, number of slashes in the URL etc. In this work, we are particularly interested in the later set of values, those that do not depend on the query. Our goal is to compute a combination of such values, which we designate as Unified Term Impact values (UTIs), and store them for later use, at query time.
 
-The use of precomputed term impacts in documents was first proposed and studied by Anh and Moffat~\cite{Anh:2002:ITE:564376.564380}
+The use of precomputed term impacts in documents was first proposed and studied by Anh and Moffat~\cite{Anh:2002:ITE:564376.564380}.
 %, and was further addressed in two other followup articles~\cite{Anh:2005:SSS:1076034.1076075,anh2008term}. 
-Their work aimed to reduce the number of arithmetic computations performed at query processing times, using a fixed term impact computation strategy that was not based on machine learning. Carvalho et al~\cite{costa2012lepref} proposed a method, called \lepref, to precompute UTI values from multiple sources of relevance evidence,. They used Genetic Programming (GP)
+Their work aimed to reduce the number of arithmetic computations performed at query processing time, using a fixed term impact computation strategy that was not based on machine learning. Carvalho et al~\cite{costa2012lepref} proposed a method, called \lepref, to precompute UTI values from multiple sources of relevance evidence,. They used Genetic Programming (GP)
 %~\cite{Koza97geneticprogramming} 
  to fuse such sources into a single numerical value at indexing time.
 %This method discards all features not readily available at indexing time and adopts the concept of a single numerical value to represent the whole set of sources of relevance evidences, both query dependent and query independent. 
@@ -212,7 +212,7 @@ Their method makes query processing faster, at the cost of increased computation
 
 The issues related to combining efficiency and effectiveness in learning to rank have been recently addressed in the literature. Chen et al.~\cite{Chen2017} study  the importance of tightly integrating feature costs into multi-stage L2R IR systems. They present an approach to optimize cascaded ranking models that provides a better balance between efficiency and quality of ranking results.  The study proposed here can be combined with the cascade strategy, since the UTI approaches can be incorporated in any cascade ranking strategy.
 
-Lucchese et al.~\cite{Lucchese2016}  propose a  framework, named CLEaVER, for optimizing learning to ranking models based on ensembles of regression trees.  Their method first removes a subset of the trees in the ensemble, and then fine-tunes the weights of the remaining trees according to any given quality measure. Experiments conducted on two publicly available  datasets show that CLEaVER is able to prune up to 80\% of the trees. Again, their method is orthogonal to the ones proposed here. Their pruning strategy can be also applied when fusing evidences at indexing times, which may further reduce the computational costs of training. 
+Lucchese et al.~\cite{Lucchese2016}  propose a  framework, named CLEaVER, for optimizing L2R models based on ensembles of regression trees.  Their method first removes a subset of the trees in the ensemble, and then fine-tunes the weights of the remaining trees according to any given quality measure. Experiments conducted on two publicly available  datasets show that CLEaVER is able to prune up to 80\% of the trees. Again, their method is orthogonal to the ones proposed here. Their pruning strategy can be also applied when fusing evidences at indexing times, which may further reduce the computational costs of training. 
 
 
 %LambdaMART~\cite{wu2010lambdamart} is a gradient boosting algorithm that has been used with success in many different machine learning scenarios. We %choose to use this algorithm to LePrEF using a method that can be adopted by a real search engine considering its fast performance in the training and %test phases when compared  to GP. Further,  previous research on L2R methods indicate that LambdaMART achieves  better quality results in ranking  %when compared to L2R using GP. 
@@ -231,18 +231,18 @@ which adopts a neural network model.
 %optimize any rank quality measure. 
 We will
 now present a brief explanation of the points necessary to understand
-how to use LambdaMART to generate UTIs (Unified Term Impact).
+how we modfied LambdaMART to generate UTIs (Unified Term Impact).
 
 LambdaMART constructs a ranking model $F$ that maps
-each set of features of instance $x$ into numerical score $F(x)$. Each instance $x=(q,d,r_{(d,q)},fs_{(d,q)})$ is a tuple composed of a query $q$, a document number $d$, the relevance level of document $d$ in respect to query $q$, $r_{(d,q)} \in \{0,1,2\}$, and the set of feature values related to document $d$ and query $q$, $fs_{(d,q)}$.   Mapping occurs by traversing a regression tree, where the direction to be followed (left or right) is defined by the value of each feature. Each leaf $\gamma_{l,n}$,$l=1,..,L, n=1,..,N$ of the tree has a value learned during the training, where $N$ is the number of trees and $L$ is the number of leaves.
+each set of features of an instance $x$ into a numerical score $F(x)$. Each instance $x=(q,d,r_{(d,q)},fs_{(d,q)})$ is a tuple composed of a query $q$, a document number $d$, the relevance level of document $d$ in respect to query $q$, $r_{(d,q)} \in \{0,1,2\}$, and the set of feature values related to document $d$ and query $q$, $fs_{(d,q)}$.   Mapping occurs by traversing a regression tree, where the direction to be followed (left or right) is defined by the value of each feature. Each leaf $\gamma_{l,n}$ (where $l=1,\cdots,L$ and $n=1,\cdots,N$, with $N$ being the number of trees and $L$ being the number of leaves per tree) contains a value learned during the training.
 
 Although based on \lambdamart, our approach computes a model $Ft$
-that produces UTI scores for each pair of query term and document, instead of computing a  model that computes scores for each pair of query and document. Thus, in our case, each instance $x=(q,d,r_d,fs_{(d,q)})$ is
+that produces UTI scores for each \emph{query term and document pair}, instead of computing a model for the scores of each query and document pair. Thus, in our case, each instance $x=(q,d,r_d,fs_{(d,q)})$ is
 decomposed into $|q|$ training instances in the form $x_t=
 (t,d,r_{(d,q)},fs_{(d,t)}))$, where $t \in q$, and $fs_{(d,t)}$ denotes the
 set of feature values related to document $d$ and term $t$. Notice
 that query dependent features are not available in $x_t$, which makes
-the number of features adopted by our model smaller than the ones
+the number of features adopted by our model smaller than the number of those
 adopted in original \lambdamart. The model $Ft$ is trained and then
 applied to compute the UTI values that we store at indexing times, in a process detailed below.
 
@@ -252,7 +252,7 @@ applied to compute the UTI values that we store at indexing times, in a process 
 \SetAlgoLined
 \SetKwInOut{Input}{input}\SetKwInOut{Output}{output}
 \Input{number of trees $N$, set of training instances $\mathcal{M}$, number of leaves per tree $L$, learning rate $\eta$}
-\Output{Model to compute UTI values $Ft$}
+\Output{model $Ft$ to compute UTI values }
 \ForEach{$(q,d,r_{(d,q)},fs_{(d,q)}) \in \mathcal{M}$}{
     \lForEach{$t \in q$} {
         $Ft_0((t,d,r_{(d,q)},fs_{(d,t)})) \leftarrow 0$ 
@@ -265,7 +265,7 @@ applied to compute the UTI values that we store at indexing times, in a process 
            $scores[d,q] \gets scores[d,q] + Ft_{n-1}(t,d,r_{(d,q)},fs_{(d,t)})$
         }
      }
-     \ForEach{Query $q$ found in $\mathcal{M}$ and each pair of documents $(d_j,d_k)$ such that $d_j \neq d_k$ and $scores[d_j,q]>0$ and $scores[d_{k},q]>0$  }{ 
+     \ForEach{query $q$ found in $\mathcal{M}$ and each pair of documents $(d_j,d_k)$ such that $d_j \neq d_k$ and $scores[d_j,q]>0$ and $scores[d_{k},q]>0$  }{ 
      \If{$r_{(d_j,q)}>r_{(d_k,q)}$} {
             $\Delta_{\lambda} \gets \bigg( \Delta NDCG(d_j,d_k,q,scores) / (1 + \mathrm{e}^{(scores[d_j,q] - scores[d_k,q])} \bigg)$\;
             $\Delta_{w} \gets \Delta_{\lambda} \times (1 - (1 + \mathrm{e}^{(scores[d_j,q] - scores[d_k,q])})$\;
@@ -288,14 +288,12 @@ applied to compute the UTI values that we store at indexing times, in a process 
 }
 \end{algorithm}\DecMargin{1em}
 
+\todop{no algoritmo, onde fala ``Create $L$ leaf tree'' seria ``Create a tree with $L$ leafs''?}
 
-UTI \lambdamart works as follows.
-The process starts with the model's initialization (lines 1--3). The model computation is performed from lines 4--24. We we start by computing a score for each document-query pair ($scores[d,q]$, lines 5--8). 
-This score consists of summing each terms individual UTI, using the model $Ft_{n-1}$, computed so far by the algorithm. 
-
-Using the scores thus computed, we can estimate the difference in NDCG obtained by switching the order of every pair of documents $(d_j,d_k)$ in a query results list ($\Delta NDCG$, lines 9--19). This is performed only when the relevance score for $d_j$ is higher than the relevance score for $d_k$. $\Delta NDCG$ is then used  to compute the $\lambda$ and weight values associated with each term-document-query triple ($\lambda[t,d,q]$ and $w[t,d,q]$, respectively, lines 11--17).
-
-Finally, in lines 21--24 the original \lambdamart\ steps of finding the regression trees and updating the model are executed, and the model $Ft_n$ is updated. See the original method~\cite{wu2010lambdamart} for further details about these final steps.
+UTI \lambdamart, described in Algorithm~\ref{lambda}, works as follows.
+The process starts with the model's initialization (lines 1--3). We then start by computing a score for each document-query pair ($scores[d,q]$, lines 5--8), by summing each term's individual UTI, using the model $Ft_{n-1}$, computed so far by the algorithm. 
+Using the scores thus computed, we can estimate the difference in NDCG obtained by switching the order of every pair of documents $(d_j,d_k)$ in a query results list ($\Delta NDCG$, lines 9--19). This is performed only when the relevance score for $d_j$ is higher than the relevance score for $d_k$. $\Delta NDCG$ is then used  to compute the $\lambda$ and weight values associated with each term-document-query triple ($\lambda[t,d,q]$ and $w[t,d,q]$, respectively) in lines 11--17.
+Finally, in lines 21--24, the original \lambdamart\ steps of finding the regression trees and updating the model are executed, and the model $Ft_n$ is updated. See the original method~\cite{wu2010lambdamart} for further details about these final steps.
  
  %\item{Line 5.a):This is a new step and contains the main changes made in the original LambdaMART algorithm. Before training a new regression tree, fist we sum the UTIs of all the terms of the same query-document according to the current model $F_{n-1}$ and after order the results documents considering a unique document score.} 
  %\item{Line 5.b): In this step, we compute the lambdas, the gradients of the cost related to the model scores, for each pair of documents in the query; To compute the Lambdas, LambdaMART works like LambdaRank, for each document training pair $(j,k)$ the $\lambda(j,k)$ is computed. If document $k$ is ranked lower than document $j$, than both receive the same amount of $\lambda(j,k)$ with opposite signs.This means that $j$ receive a value up and $k$ a value down and represents how stronger each one is in the rank. This step is conceptually the same in LePrEF GBRT, the change is that the $\lambda$ value is assigned for each document-term. All learning is based in instances by term, and the score is used directly in the inverted list.}
