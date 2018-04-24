@@ -82,7 +82,7 @@
 
 \usepackage[utf8]{inputenc}
 
-
+\usepackage{booktabs}
 
 \usepackage{todonotes}
 \newcommand{\todop}[1]{\todo{P: #1}}
@@ -191,7 +191,9 @@ without loss of quality. Further, the use of UTI with \lambdamart\ produces resu
 %Our adaptation allows for improvements in the quality of the rankings produced varying from XXXX through %XXXX points in precison, when compared to the state of the art. Also, we are able to achieve these results %in XXXX of the time required by LePref. 
 
 
-The remaining of this article is organized as follows. In Section~\ref{relatedwork}, we discuss related work and show an overview of the basic concepts involved. Section ~\ref{lambda} presents the proposed method describing how we use LambdaMART to generate UTI scores at indexing time. Section~\ref{experiments} presents our experimental setup, followed by the experimental comparison to current baselines in Section~\ref{results}. Finally, Section~\ref{conclusion} presents the concluding remarks and directions for future research.
+The remaining of this article is organized as follows. In Section~\ref{relatedwork}, we discuss related work and show an overview of the basic concepts involved. Section ~\ref{lambda} presents the proposed method describing how we use LambdaMART to generate UTI scores at indexing time. Section~\ref{experiments} presents our experimental setup, followed by the experimental comparison to current baselines.
+% in Section~\ref{results}. 
+Finally, Section~\ref{conclusion} presents the concluding remarks and directions for future research.
 
 
 \section{Related Work}
@@ -330,88 +332,71 @@ Finally, in lines 21--24, the original \lambdamart\ steps of finding the regress
 \section{Experiments}
 \label{experiments}
 
+We now present our experimental setup, followed by the experimental comparison to current baselines.
 
 \subsection{Datasets}
 \label{sec:datasets}
 
-In our experiments, we used the LETOR MQ2007 benchmark~\cite{liu2007letor}. LETOR  was  created using  the GOV2 document collection, which contains roughly 25 million web pages.  Every query-document pair in this dataset is represented by a 46-feature vector. Part of these features are extracted from the term frequencies (\textbf{TF}), inverse term frequencies (\textbf{IDF}), and \textbf{TF} x \textbf{IDF}, values of the terms in the document and from the length of the document (in number of terms). Each of these values is computed from different areas of the documents --- the body of the text, the anchor text, the title, the URL, and the whole document --- thereby generating a total of 20 features. Six other features are derived from the link structure and URL --- PageRank, InLink Count, OutLink Count, Number of Slashes on URL, Length of URL, and Number of Child Page. Finally, the remaining features are the scores of the documents in relation to the user query, and thus cannot be taken into account by UTI methods. These features include BM25  scores and three variations of Language Model-based functions, all applied to the same five different areas of the document mentioned above.  A detailed description of the features can be found in~\cite{liu2007letor}. 
+For our experiments, we used the LETOR MQ2007 benchmark~\cite{liu2007letor}. LETOR  was  created using  the GOV2 document collection, which contains roughly 25 million web pages.  Every query-document pair in this dataset is represented by a 46-feature vector. Part of these features are extracted from the term frequencies (\textbf{TF}), inverse term frequencies (\textbf{IDF}), and \textbf{TF} x \textbf{IDF}, values of the terms in the document, as also from the length of the document (in number of terms). Each of these values is computed from different areas of the document --- the body of the text, the anchor text, the title, the URL, and the whole document --- thereby generating a total of 20 features. Six other features are derived from the link structure and URL --- PageRank, InLink Count, OutLink Count, Number of Slashes on URL, Length of URL, and Number of Child Pages. Finally, the remaining features are the similarity scores of the documents in relation to the user query, and thus cannot be taken into account by UTI methods. These features include the BM25 score and three variations of Language Model-based functions, all applied to the same five different areas of the document.  A detailed description of these features can be found in~\cite{liu2007letor}.
 %When taking the features \textbf{TF}, \textbf{IDF}, \textbf{TF} x \textbf{IDF}  in UTI-LambdaMART, we do not use the sum of features values obtained with each query term, we compute the individual values of frequency of each query term in each document as features.
 
-LETOR  was created by using BM25~\cite{robertson1994some} as the base ranker to select an initial set of documents that can be good answers for each query. The L2R methods reorder  this initial set of ranked documents by applying the whole set of features available to generate the final ranking results~\cite{cambazoglu2010early}. The collection contains about 40 documents labelled as relevant or not for each query.
+LETOR  was created by using BM25~\cite{robertson1994some} as the base ranker to select an initial set of documents that can be good answers for each query. L2R methods are used to reorder this initial set of ranked documents by applying the whole set of features available to generate the final ranking~\cite{cambazoglu2010early}. The collection contains about 40 documents labelled as relevant or not for each query.
 
 
 \subsection{Settings and Metrics}
 \label{sec:lsett}
 
-Our mains baselines for comparison are the original \lambdamart\ algorithm~\cite{wu2010lambdamart}, using the QuickRank implementation~\cite{capannini2016quality}, together with the Genetic Programming-based method UTI-GP~\cite{costa2012lepref}. Both LambdaMART and UTI-\lambdamart\ were trained using 100 trees ($N=100$), with a learning rate of 0.1 ($\eta=0.1$) and 4 levels deep ($d=4$). During the training of both, UTI-LambdaMART and LambdaMART, we optimized the average Normalized Discounted Cumulative Gain (NDCG) with cutoff at 10 results.
+Our main baselines for comparison are the original \lambdamart\ algorithm~\cite{wu2010lambdamart}, using the QuickRank implementation~\cite{capannini2016quality}, together with the Genetic Programming-based method UTI-GP~\cite{costa2012lepref}. Both LambdaMART and UTI-\lambdamart\ were trained using 100 trees ($N=100$), with a learning rate of 0.1 ($\eta=0.1$) and 4 levels deep ($d=4$). During training, we optimized the average Normalized Discounted Cumulative Gain (NDCG) with cutoff at 10 results.
 
-The UTI-GP implementation was provided by the authors~\cite{costa2012lepref} and the methodology and parameter settings adopted follow the ones proposed by them: Using $40$ generations, population size $1000$, tree dept $17$, tournament size $6$, crossover rate $0.85$, mutation rate $0.05$ and reproduction rate $0.10$ and performing 10 runs with distinct random seeds. 
+The UTI-GP implementation was provided by the authors~\cite{costa2012lepref} and the methodology and parameter settings adopted follow those proposed in the paper. More specifically, using $40$ generations, population size $1000$, tree depth $17$, tournament size $6$, crossover rate $0.85$, mutation rate $0.05$ and reproduction rate $0.10$, performing 10 runs with distinct random seeds. 
  
-We adopt NDCG as the quality metric in the experiments~\cite{baezaribeiro2011modinforet}. We experimented with other quality metrics, however since the conclusions did not change, for simplicity we decided not to include the results.
+We adopt NDCG as the quality metric for the experiments~\cite{baezaribeiro2011modinforet}. We did experiment with other quality metrics\todop{melhor dizer quais, ou dar 1 ou 2 exemplos}, however, since the conclusions did not change, for simplicity we decided not to include the results here.
 
-\section{Results}
+\subsection{Results}
 \label{results}
 
-The upper part of Table~\ref{tab:baseline} shows the average NDCG@X values achieved by the standard L2R methods reported in LETOR (Rankboost, ListNet, AdaRank and RankSVM) and LambdaMART, while the lower part shows the NDCG average values for the UTI-based methods UTI-GP~\cite{costa2012lepref} and our own UTI-LambdaMART. The differences in NDCG achieved by the compared L2R methods are quite small --- smaller than 0.015 between the highest and lowest values. A t-test revealed no statistically significant difference between the results achieved. We can observe the same in Figure 1, where the ndcg@X of each presented model is quite similar to the model proposed UTI-LambdaMART. 
+The upper part of Table~\ref{tab:baseline} shows the average NDCG\todop{average de quê?} values achieved by the standard L2R methods reported in LETOR (Rankboost, ListNet, AdaRank and RankSVM) and LambdaMART, while the lower part shows the NDCG average values for the UTI-based methods UTI-GP~\cite{costa2012lepref} and our own UTI-LambdaMART. The differences in NDCG achieved by the compared L2R methods are quite small --- smaller than 0.015 between the highest and lowest values. A t-test revealed no statistically significant difference between the results achieved. We can observe a similar result in Figure~\ref{fig:ndcg10}\todop{na legenda da figura deveria ser ``ndcg@X'' para ficar igual ao texto}, where the ndcg@X of each presented model is quite similar to that achieved by UTI-LambdaMART. 
 
-The results in Table~\ref{tab:baseline} and Figure~\ref{fig:ndcg10} show that the UTI methods are able to achieve results comparable to the standard L2R methods, in spite of using only features available at indexing time. This fact, combined with the advantage of reducing the cost to compute the ranking at query time, makes the UTI methods a very competitive choice for processing queries in large scale collections.
-
-
-\begin{table}
+\begin{table*}[ht!]\centering
 
 \caption{Average NDCG results obtained by UTI-LambdaMART, compared to the baseline L2R methods available in LETOR.}
 
 \label{tab:baseline}
 
-\begin{center}
+\vspace{.3\baselineskip}
 
-\begin{tabular}{|c|c|}
+\begin{tabular}{@{}lc@{}}
 
-\hline
+\toprule
 
 \textbf{Method} & \textbf{NDCG} \\
 
-\hline\hline
+\midrule
 
 AdaRank & 0.491 \\
-
-\hline
-
 RankSVM & 0.497 \\
-
-\hline
-
 ListNet & 0.499 \\
-
-\hline
-
 RankBoost & 0.500 \\
-
-\hline
-
 LambdaMART & 0.505 \\
 
-\hline\hline
+\midrule
 
 UTI-GP & 0.496\\
-
-\hline
-
 UTI-LambdaMART & 0.497 \\
 
-\hline
+\bottomrule
 
 \end{tabular}
 
-\end{center}
+\end{table*}
 
-\end{table}
+These results show that the UTI methods are able to achieve results comparable to the standard L2R methods, in spite of using only features available at indexing time. This fact, combined with the advantage of reducing the cost to compute the ranking at query time, makes the UTI methods a very competitive choice for processing queries in large scale collections.
 
 Table~\ref{tab:baseline} also shows that the quality of results
 produced by UTI-LambdaMART and UTI-GP are very similar. However, the
 time required for training in UTI-LambdaMART is far smaller than
 the time required for training in UTI-GP. In our
-experiments the UTI-GP model took about 3 hours for training, following the approach described by the authors~\cite{costa2012lepref}, while UTI-LambdaMART took only
+experiments the UTI-GP model took about 3 hours for training, following the approach described by its authors~\cite{costa2012lepref}, while UTI-LambdaMART took only
 about 5 minutes.
 
 
@@ -421,13 +406,15 @@ about 5 minutes.
 
 \includegraphics[width=10cm, height=5cm]{im_ndcg_baseline.png}
 
-\caption{Comparison Results with NDCG@1 to NDCG@10 on LETOR}
+\caption{NDCG@1 through NDCG@10 of each L2R method in LETOR.}
 
 \label{fig:ndcg10}
 
 \end{center}
 
 \end{figure}
+
+\todo[inline]{isto não é fundamental, mas fica o comentário: os gráficos têm um aspecto ruinzinho. têm muito cara de excel e parece que foram esticados na horizontal. não valeria trocar por uns mais ``profissionais''? vale a pena usar algo como o plotly, por exemplo?}
 
 While in LETOR there is almost no difference between UTI methods and other
 learning methods, in practice search engines may contain
@@ -436,7 +423,7 @@ important features, not present in LETOR, but available at query processing time
 \begin{figure}[ht!]
 \centering
 \includegraphics[width=10cm, height=5cm]{im_ndcg10leprefbm25.png}
-\caption{LambdaMART results achieved when using BM25, UTI-LamdaMART and UTI-GP as base rankers}
+\caption{Performance of BM25, UTI-GP, and UTI-LambdaMART when used as base rankers for \lambdamart.}
 \label{fig:bm25}
 \end{figure}
 
@@ -447,13 +434,12 @@ We can see that both UTI-based models outperform BM25 as a base ranker. For exam
 2 results, we achieve value of NDCG of 0.55 when using
 UTI-LambdaMART, while to achieve the same quality with BM25 we need to
 take the 9 top results.
-
-This result shows that UTI-LambdaMART can be effectively employed 
+This shows that UTI-LambdaMART can be effectively employed 
 in practical web search scenarios as a base ranker.
-First, as shown in Figure~\ref{fig:bm25}, it reduces the number of top results that must be processed by the top ranker. 
-Second, it reduces the amount of features to be fetched and computed at query processing time, since UTI values represent information extracted from all features available at indexing times. In fact, the UTI values enconde 26 features available at indexing times in LETOR, and only the remaining 20 features would be fetched at query processing times.
-% This combination means practical gains in performance that depend on the architecture and feature sets adopted by each system.
-
+Its two main advantages are: (1)
+it reduces the number of top results that must be processed by the top ranker, and (2) 
+it reduces the amount of features to be fetched and computed at query processing time.
+To illustrate the latter advantage, we observe that from the 46 features available in LETOR, 26 are encoded into the UTI at indexing time. Thus, only 20 (i.e. less than 50\%) need to be computed at query time.
 
 %\subsection{Compressing the UTIs}
 \subsection{Reducing the Index Size}
@@ -461,7 +447,7 @@ Second, it reduces the amount of features to be fetched and computed at query pr
 
 A common approach for improving search engine time and space efficiency is to compress the inverted index~\cite{baezaribeiro2011modinforet}. A compressed index will take less storage space and thus require less I/O operations, generally yielding a gain in performance. In our proposal, we can exploit UTI-\lambdamart\ to achieve a much smaller index with low impact on its construction time. In addition, our approach will still allow the complementary application of standard compression methods, thus possibly yielding even greater gains.
 
-Our proposal for index size reduction consists in, quite simply, truncating the decimal places in the UTI values generated. In Algorithm~\ref{alg:utilambda}, every time the function $Ft_n$ is evaluated, only the first $d$ decimal places are considered. A smaller value for $d$ means less bytes required for storage per UTI. Interestingly, even though this will limit the precision of the document score calculation, UTI-\lamdamart\ will still try to optimize the final ranking, thus minimizing the impact that this loss of information might have on the quality of the results, as we show in the following experiments.
+Our proposal for index size reduction consists in, quite simply, truncating the decimal places in the UTI values generated. In Algorithm~\ref{alg:utilambda}, every time the function $Ft_n$ is evaluated, only the first $d$ decimal places are considered. A smaller value for $d$ means less bytes required for storage per UTI. Interestingly, even though this will limit the precision of the document score calculation, UTI-\lamdamart\ will still try to optimize the final ranking, thus minimizing the impact that this loss of information might have on the quality of the results. This is made clear in the following experiments.
 
 % This simple strategy achieved satisfactory results with practically no
 % variation in quality. Without loss of generality, for the experiments
@@ -473,13 +459,12 @@ Our proposal for index size reduction consists in, quite simply, truncating the 
 \begin{figure}[ht!]
 \centering
 \includegraphics[width=10cm, height=5cm]{im_cr_ndcg_lambda.png}
-\caption{Compression rate achieved by applying Elias-$\delta$ to the UTI values (varying the number of digits truncated from 0 to 5) produced by UTI-LambdaMART in the index and the NDCG@10 achieved when varying the number of truncated digits;}
+\caption{Compression rate achieved by varying the number of digits truncated from 0 through 5. Elias-$\delta$ coding was also applied to the truncated UTI values. The NDCG@10 achieved is also shown.}
 \label{fig:crq}
 \end{figure}
 
-Figure~\ref{fig:crq} shows the compression rates achieved when varying the number of digits truncated in the UTI value, applying the technique to. Without loss of generality, in addition to our approach, we also compressed the truncated UTI values with the commonly used technique of \textit{Elias Delta codes}~\cite{elias1975universal}. To compute the compression rate, we assume that each original UTI value (i.e. non-truncated) would be represented as a 32 bit floating point number. 
-
-As can be seen, there is indeed a trade-off between quality and compression rate as we vary the number of decimal point values truncated when transforming real values of UTI into integer values.
+Figure~\ref{fig:crq} shows the compression rates achieved when varying the number of digits truncated in the UTI value. Without loss of generality, in addition to our approach, we also compressed the truncated UTI values with the commonly used technique of \textit{Elias Delta coding}~\cite{elias1975universal}. To compute the compression rate, we assume that each original UTI value (i.e. non-truncated) would be represented as a 32 bit floating point number. 
+As can be seen, there is indeed a trade-off between quality and compression rate, as we vary the number of decimal point values truncated.
 Nevertheless, results of truncating the UTI to only $1$ decimal digit yields only a reduction of 0.0004 in NDCG, while achieving a compression rate of about 83\%.
 When truncating to zero digits, we see a clear negative impact in the NDCG values, indicating that the best tradeoff was achieved in fact when $d=1$.
 
@@ -503,12 +488,12 @@ When truncating to zero digits, we see a clear negative impact in the NDCG value
 
 \section{Conclusion}
 
-We proposed the UTI-LambdaMART, a modified LambdaMART ranking algorithm, in order to generate UTI scores for each pair of query term and document at indexing time.
+In this work, we proposed UTI-LambdaMART, a modified LambdaMART ranking algorithm, designed to generate UTI scores for each pair of query term and document at indexing time.
 
-The experimental results indicate that UTI-LambdaMART produces quality results closer to the ones produced by UTI-GP, while significantly reduces the time required for learning the model. 
-We also investigated two scenarios, the use of UTI-LambdaMART as the base ranker and using UTI-LambdaMART as top ranker. In the first, UTI values are able to produce high quality first cut rankings that are close to the final document order, reducing the amount of documents necessary to be inspected in the top ranker and resulting
-in gains of performance when comparing to a system that adopts BM25 as the base ranker. In the second scenario, UTI-LambdaMART is directly applied as the top ranker, and we show that, even taking only features available at indexing times, it produces rankings with quality closer to learn to rank methods adopted at query processing times, but with the advantage of adopting a very simple ranking
-strategy at query processing times.
+The experimental results indicate that UTI-LambdaMART produces quality results, closer to those produced by the previous state-of-the-art UTI-GP, while significantly reducing the time required for learning the model. 
+
+We also investigated two scenarios: the use of UTI-LambdaMART as the base ranker and the use of UTI-LambdaMART as main ranker. In the first case, UTI values were shown to produce high quality first cut rankings, that are actually close to the final rank order. This reduces the amount of documents necessary to be inspected by the top ranker and thus results
+in gains of performance, when compared to a system that adopts BM25 as the base ranker. In the second case, UTI-LambdaMART is directly applied as the top ranker, and we show that, even though taking only features available at indexing time, it produces rankings with quality comparable to other L2R methods used at query time. Unlike the other L2R method, however, UTI-LambdaMART has the advantage of being much faster at query processing time.
 
 
 %The experimental results presented in this work indicate that UTI-LambdaMART produces %quality results closer to the ones produced by UTI-GP, while significantly reduces %the time required for learning the model. Further, in the experiments with LETOR, we %achieved higher compression results than those achieved by \cite{costa2012lepref}.
@@ -516,7 +501,8 @@ strategy at query processing times.
 %in gains of performance. In the second scenario, UTI-LambdaMART is directly applied %as the top ranker, and we show that, even taking only features available at indexing %times, it produces rankings with quality closer to learn to rank methods adopted at %query processing times, but with the advantage of adopting a very simple ranking
 %strategy at query processing times.
 
-Our future investigations are to know which results will be achieved when the UTI score is used as a feature in the learning process and applied to traditional L2R approaches. Finally, we plan to further evaluate the possible gains in query processing times generated by the use of   UTI-LambdaMART.
+Future work will include an invesigation on how UTI score computed by our method can be used as a feature in the learning process of traditional L2R approaches. 
+Finally, we plan to further evaluate the possible gains in query processing times generated by the use of UTI-LambdaMART\todop{esta frase está muito vaga. não entendi: porque haveriam mais ganhos?}.
 
 \label{conclusion}
 
