@@ -111,13 +111,9 @@
 
 \begin{abstract}
 
-%There has been an ongoing effort to apply \textit{learning to rank} techniques in search engines query processing, with the goal of enhancing the quality of the search results. Most works, however, focus on applying such techniques at query time, thus adding complexity to the search process. 
 In this paper we address the problem of using a learning to rank technique to fuse sources of relevance evidence at indexing time in search systems. We propose a modified Gradient Boosted Regression Tree algorithm to generate \textit{unified term impacts} (UTI) to be stored in the index.
 The UTI is the only value needed later for ranking the documents, thus greatly reducing the effort needed to compute the document scores. 
 Our approach achieves better results in quality, when compared to previously proposed methods to compute UTI, while requiring much less time for training. In addition, we show how to obtain significant gains in index compression with virtually no loss in the quality of search results.
-% This is achieved by exploiting a simple, yet effective, reduction of size in the representation of the unified term impact values, when the inverted list is created. 
-%Our best approach was able to achieve 91\% compression rate of the index, while keeping the quality of results on par with methods that do not use compression.
-
 
 \begin{keyword}
 \texttt Learning to Rank \sep Search Engines \sep Indexing \sep LambdaMART \sep Gradient Boosting
@@ -138,33 +134,23 @@ Our approach achieves better results in quality, when compared to previously pro
 \label{intro}
 
 The production of high quality ranking results is a fundamental aspect of Web search engines. Users expect the answers to their queries to be shown at the top of the list and rarely go beyond the first page displayed~\cite{saraiva2001rank}. 
-%When unsatisfied, in the best case, users will issue new queries, thus increasing the load of the system, while in the worst case, they will simply try a competitor system. 
+
 Further, modern search engine users are used to experience fast query processing times, regardless of the size of the dataset, and any noticeable increase in waiting time can be a fatal blow to the their perception of the quality of the system. Thus,
-%although commercial search engines can receive tens of thousands of queries per second, each one requiring access to a massive collection of data, 
 computational efficiency cannot be obtained at the cost of quality. 
 
 The issue of quality is usually addressed through a class of machine learning techniques commonly known as \textit{learning to rank} (L2R). Query processing by a L2R-based search engine is performed in two steps: first, the top-k documents for a query are retrieved using a low cost ranking strategy, such as BM25, referred to as \emph{base ranker}; second, the documents are re-ranked with the more expensive L2R model, referred to as \emph{top-ranker}~\cite{capannini2016quality}.
 
-An important aspect of modern search engines is the use of a large number of distinct sources of \emph{relevance evidence} to build the L2R model. Collectively, these determine whether or not the document is relevant to a query. Examples of such sources of relevance evidence are the frequencies of terms in the text, urls, titles and other parts of the document,
-%, part of speech tags
-web link graph analysis,
-%, anchor text of the incoming links to a web page, HTML structure, such as titles and headings, url tokenization
-among others~\cite{baezaribeiro2011modinforet}. 
-
-%These distinct sources of relevance evidence are used to compute the query result rankings. 
-%The query result rankings is computed by fusing all sources into a single document score, for each document in the final ranking. In the past few decades, most work on fusing evidence has been done with the deployment of L2R methods such as RankBoost~\cite{freund2003efficient}, Genetic Programming based methods~\cite{de2007combined, silva2009evolutionary}, RankSVM~\cite{joachims2002optimizing} and, the current state of the art, Gradient Boosting method LambdaMART~\cite{wu2010lambdamart}. These methods use examples of queries and their respective results, to train a supervised learning model that determines the relative position of the documents in the result list. Once trained, the model can be used during query processing to determine the final ranking. This approach, however, inadvertently adds computational costs to query processing, which may lead to a drop in time  performance.
+An important aspect of modern search engines is the use of a large number of distinct sources of \emph{relevance evidence} to build the L2R model. Collectively, these determine whether or not the document is relevant to a query. Examples of such sources of relevance evidence are the frequencies of terms in the text, urls, titles and other parts of the document, web link graph analysis, among others~\cite{baezaribeiro2011modinforet}. 
 
 The ranking of query results is computed by fusing all sources of evidence into a single document score, for each document in the final ranking. In the past few decades, most work on fusing evidence has been done with the deployment of L2R methods~\cite{liu11:L2RfIR}.
-%such as the LambdaMART Gradient Boosting method~\cite{wu2010lambdamart}, which is now among the current state-of-the-art. 
-L2R methods use examples of queries and their respective results, to train supervised learning models that determine the relative position of the documents in the result list. Once trained, the model can be used during query processing to determine the final ranking. This approach, however, inadvertently adds computational costs to query processing, which may lead to a drop in time performance.
 
+L2R methods use examples of queries and their respective results, to train supervised learning models that determine the relative position of the documents in the result list. Once trained, the model can be used during query processing to determine the final ranking. This approach, however, inadvertently adds computational costs to query processing, which may lead to a drop in time performance.
 
 \newcommand{\lepref}{LePrEF}
 \newcommand{\lambdamart}{LambdaMART}
 
 To mitigate this problem, an alternative approach has been proposed --- Learn to Precompute Evidence Fusion (\lepref)~\cite{costa2012lepref}, also based on supervised learning techniques. \lepref\ proposes to implement the bulk of the evidence fusion during indexing time, generating a single inverted index containing unified entries representing all sources of evidence. These unified entries are called \textit{Unified Term Impacts} (UTIs). 
-%Fig.~\ref{fig:arq} shows a diagram of \lepref's architecture. 
-%Contrary to traditional systems, the \lepref\ approach does not maintain separate inverted indexes for each source of relevance evidence. Instead, it creates a single inverted index containing the fused values for all sources, i.e. the UTIs. 
+
 Each UTI is computed based on a pre-trained L2R model and, at query time, the search engine needs only to sum each of the query term's UTI to directly obtain the document scores.
 
 In this work, we propose and study an adaptation of \lambdamart~\cite{wu2010lambdamart}, a gradient boosting algorithm, to compute the UTIs of each term at indexing time.
@@ -175,49 +161,20 @@ In the remainder of this text, we refer to our approach as UTI-LambdaMART. We pr
 where our adaptation of \lambdamart\ achieves results in 2.8\% of the time required by \lepref %using GP 
 without loss of quality. Further, the use of UTI with \lambdamart\ produces results on pair with the ones produced by state-of-art learning to rank methods.
 
-%\begin{figure}
-%\begin{center}
-%\includegraphics[width=12cm, height=5cm]{im_arquitetura.png}
-%\caption{The LePrEF architecture. }
-%\label{fig:arq}
-%\end{center}
-%\end{figure}
-
-
-
-%While the authors of LePrEF show that it can lead to high quality results, they're approach has several drawbacks.  First, UTIs are computed using Genetic Programming~\cite{Koza97geneticprogramming}, an optimization method that has a high computational cost during the model training phase. Second, XXXXXX. In this work, we avoid these issues by proposing an adaptation of \lambdamart~\cite{wu2010lambdamart}, a gradient boosting algorithm, to compute the UTIs of each term at the indexing time. \lambdamart\ was designed specifically to optimize ranking quality metrics, such as NDCG, and was shown to be very effective in traditional (i.e. query-time) L2R tasks. Our adaptation allows to achieve results in 2.8\% of the time required by LePrEF using GP without lost of quality.
-
-
-%Our adaptation allows for improvements in the quality of the rankings produced varying from XXXX through %XXXX points in precison, when compared to the state of the art. Also, we are able to achieve these results %in XXXX of the time required by LePref. 
-
-
 The remaining of this article is organized as follows. In Section~\ref{relatedwork}, we discuss related work and show an overview of the basic concepts involved. Section ~\ref{lambda} presents the proposed method describing how we use LambdaMART to generate UTI scores at indexing time. Section~\ref{experiments} presents our experimental setup, followed by the experimental comparison to current baselines in Section~\ref{results}. Finally, Section~\ref{conclusion} presents the concluding remarks and directions for future research.
-
 
 \section{Related Work}
 \label{relatedwork}
 
-%Machine learning has been successfully adopted in a wide range of Information Retrieval applications, including in important components of search systems, such as query processing, classifying queries according to user goals, and indexing~\cite{costa2012lepref}. Here, we will focus on the latter case, i.e. using machine learning techniques to create search engine indexes.
-
-%A key concept in any search engine architecture is the set of \emph{sources of relevance evidence adopted} for ranking query results. We define a source of relevance evidence as any information that can be extracted from the document collection to contribute to rank query answers according to the user's interest. For example, common sources of evidence used by Web search engines include the pages' content, anchor text, url text, title, image descriptions, among others. All these can be used to infer if a webpage is relevant to the user's query or not. This information is translated into numerical values that are either computed at query time, or stored in search engine indexes. Values computed at query time usually represent information that depends both on the query and the document, such as the TF-IDF term weight, the cosine similarity between the query and the document, etc. Values stored in inverted indexes usually represent information that depends only on the documents, such as the term frequency values, PageRank values, number of slashes in the URL etc. In this work, we are particularly interested in the later set of values, those that do not depend on the query. Our goal is to compute a combination of such values, which we designate as Unified Term Impact values (UTIs), and store them for later use, at query time.
-
 The use of precomputed term impacts in documents was first proposed and studied by Anh and Moffat~\cite{Anh:2002:ITE:564376.564380}
-%, and was further addressed in two other followup articles~\cite{Anh:2005:SSS:1076034.1076075,anh2008term}. 
-Their work aimed to reduce the number of arithmetic computations performed at query processing times, using a fixed term impact computation strategy that was not based on machine learning. Carvalho et al~\cite{costa2012lepref} proposed a method, called \lepref, to precompute UTI values from multiple sources of relevance evidence,. They used Genetic Programming (GP)
-%~\cite{Koza97geneticprogramming} 
- to fuse such sources into a single numerical value at indexing time.
-%This method discards all features not readily available at indexing time and adopts the concept of a single numerical value to represent the whole set of sources of relevance evidences, both query dependent and query independent. 
-%Such numerical values are named Unified Term Impact (UTI) values , and are stored in the inverted index to be used at query processing time. 
+
+Their work aimed to reduce the number of arithmetic computations performed at query processing times, using a fixed term impact computation strategy that was not based on machine learning. Carvalho et al~\cite{costa2012lepref} proposed a method, called \lepref, to precompute UTI values from multiple sources of relevance evidence. They used Genetic Programming (GP) to fuse such sources into a single numerical value at indexing time.
+
 Their method makes query processing faster, at the cost of increased computational costs at indexing time. In fact, although the authors showed that computing UTI is a promising strategy, the long time required to train the evidence fusion model was a major hindrance. We here propose an adaptation of \lambdamart~\cite{wu2010lambdamart}, a gradient boosting algorithm, to compute the UTIs of each term at indexing time. \lambdamart\ was designed specifically to optimize ranking quality metrics, such as NDCG, and was shown to be a very effective L2R method. 
 
 The issues related to combining efficiency and effectiveness in learning to rank have been recently addressed in the literature. Chen et al.~\cite{Chen2017} study  the importance of tightly integrating feature costs into multi-stage L2R IR systems. They present an approach to optimize cascaded ranking models that provides a better balance between efficiency and quality of ranking results.  The study proposed here can be combined with the cascade strategy, since the UTI approaches can be incorporated in any cascade ranking strategy.
 
 Lucchese et al.~\cite{Lucchese2016}  propose a  framework, named CLEaVER, for optimizing learning to ranking models based on ensembles of regression trees.  Their method first removes a subset of the trees in the ensemble, and then fine-tunes the weights of the remaining trees according to any given quality measure. Experiments conducted on two publicly available  datasets show that CLEaVER is able to prune up to 80\% of the trees. Again, their method is orthogonal to the ones proposed here. Their pruning strategy can be also applied when fusing evidences at indexing times, which may further reduce the computational costs of training. 
-
-
-%LambdaMART~\cite{wu2010lambdamart} is a gradient boosting algorithm that has been used with success in many different machine learning scenarios. We %choose to use this algorithm to LePrEF using a method that can be adopted by a real search engine considering its fast performance in the training and %test phases when compared  to GP. Further,  previous research on L2R methods indicate that LambdaMART achieves  better quality results in ranking  %when compared to L2R using GP. 
-
-
 
 \section{Modified \lambdamart\ Algorithm}
 \label{lambda}
@@ -226,11 +183,8 @@ Lucchese et al.~\cite{Lucchese2016}  propose a  framework, named CLEaVER, for op
 The \lambdamart\ algorithm~\cite{wu2010lambdamart} is a combination of
 MART~\cite{Jerome2001}, a L2R method that adopts a boosted tree model, and LambdaRank~\cite{Burges2006},
 which adopts a neural network model. 
-%It is
-%particularly interesting for our work since it allows us to directly
-%optimize any rank quality measure. 
-We will
-now present a brief explanation of the points necessary to understand
+
+We will now present a brief explanation of the points necessary to understand
 how to use LambdaMART to generate UTIs (Unified Term Impact).
 
 LambdaMART constructs a ranking model $F$ that maps
@@ -296,38 +250,6 @@ This score consists of summing each terms individual UTI, using the model $Ft_{n
 Using the scores thus computed, we can estimate the difference in NDCG obtained by switching the order of every pair of documents $(d_j,d_k)$ in a query results list ($\Delta NDCG$, lines 9--19). This is performed only when the relevance score for $d_j$ is higher than the relevance score for $d_k$. $\Delta NDCG$ is then used  to compute the $\lambda$ and weight values associated with each term-document-query triple ($\lambda[t,d,q]$ and $w[t,d,q]$, respectively, lines 11--17).
 
 Finally, in lines 21--24 the original \lambdamart\ steps of finding the regression trees and updating the model are executed, and the model $Ft_n$ is updated. See the original method~\cite{wu2010lambdamart} for further details about these final steps.
- 
- %\item{Line 5.a):This is a new step and contains the main changes made in the original LambdaMART algorithm. Before training a new regression tree, fist we sum the UTIs of all the terms of the same query-document according to the current model $F_{n-1}$ and after order the results documents considering a unique document score.} 
- %\item{Line 5.b): In this step, we compute the lambdas, the gradients of the cost related to the model scores, for each pair of documents in the query; To compute the Lambdas, LambdaMART works like LambdaRank, for each document training pair $(j,k)$ the $\lambda(j,k)$ is computed. If document $k$ is ranked lower than document $j$, than both receive the same amount of $\lambda(j,k)$ with opposite signs.This means that $j$ receive a value up and $k$ a value down and represents how stronger each one is in the rank. This step is conceptually the same in LePrEF GBRT, the change is that the $\lambda$ value is assigned for each document-term. All learning is based in instances by term, and the score is used directly in the inverted list.}
- %\item{Line 5.d), 5.e) and 5.f) presents exactly the same steps found in original LambdaMART process.}
-%\end{enumerate}
-
-% The model proposed use instances by terms, it results in an increment in the size of the training dataset. The Table \ref{fig:letor} shows that the traininig dataset with instances by query, documents and terms (q,d,t) is more than three times the number the instances of the usual Letor dataset. To make possible to use this model in a real application we proposed to modify the UTI values from real to integer. The idea is improve the compression rate and become the process to sum UTIs values computationally better. We performing LePrEF GBRT with real values and then process the discretization in final results in the moment of generate the inverted list. This simple strategy achieved satisfactory results with practically no variation in quality. 
-
-
-%\begin{table}[h!]
- %\centering
- %\begin{tabular}{||c c c||} 
- %\hline
- %Fold & Instances (q,d) & Instances (q,d,t) \\ [0.5ex] 
- %\hline\hline
- %1 & 13652 & 50702\\ 
- %\hline
- %2 & 14013 & 55245\\
- %\hline
- %3 & 14290 & 56111\\
- %\hline
- %4 & 13855 & 56151\\
- %\hline
- %5 & 13813 & 54360\\ 
- %%[1ex] 
- %\hline
-%\end{tabular}
-%\caption{Number the instances of MQ2007 Training Dataset for LePrEF}
-%\label{fig:letor}
-%\end{table}
-
-%In the following section, we show the results obtained using the UTI \lambdamart\ algorithm.
 
 \section{Experiments}
 \label{experiments}
@@ -454,23 +376,13 @@ This result shows that UTI-LambdaMART can be effectively employed
 in practical web search scenarios as a base ranker.
 First, as shown in Figure~\ref{fig:bm25}, it reduces the number of top results that must be processed by the top ranker. 
 Second, it reduces the amount of features to be fetched and computed at query processing time, since UTI values represent information extracted from all features available at indexing times. In fact, the UTI values enconde 26 features available at indexing times in LETOR, and only the remaining 20 features would be fetched at query processing times.
-% This combination means practical gains in performance that depend on the architecture and feature sets adopted by each system.
 
-
-%\subsection{Compressing the UTIs}
 \subsection{Reducing the Index Size}
 \label{sec:compression}
 
 A common approach for improving search engine time and space efficiency is to compress the inverted index~\cite{baezaribeiro2011modinforet}. A compressed index will take less storage space and thus require less I/O operations, generally yielding a gain in performance. In our proposal, we can exploit UTI-\lambdamart\ to achieve a much smaller index with low impact on its construction time. In addition, our approach will still allow the complementary application of standard compression methods, thus possibly yielding even greater gains.
 
 Our proposal for index size reduction consists in, quite simply, truncating the decimal places in the UTI values generated. In Algorithm~\ref{alg:utilambda}, every time the function $Ft_n$ is evaluated, only the first $d$ decimal places are considered. A smaller value for $d$ means less bytes required for storage per UTI. Interestingly, even though this will limit the precision of the document score calculation, UTI-\lamdamart\ will still try to optimize the final ranking, thus minimizing the impact that this loss of information might have on the quality of the results, as we show in the following experiments.
-
-% This simple strategy achieved satisfactory results with practically no
-% variation in quality. Without loss of generality, for the experiments
-% to compress the UTI values, we adopted the \textit{Elias Delta
-% codes}~\cite{elias1975universal}, a technique that has been adopted
-% not only in UTI-\lambdamart, but also in other past research articles that
-% addressed the topic of compressing inverted indexes.
 
 \begin{figure}[ht!]
 \centering
@@ -485,24 +397,6 @@ As can be seen, there is indeed a trade-off between quality and compression rate
 Nevertheless, results of truncating the UTI to only $1$ decimal digit yields only a reduction of 0.0004 in NDCG, while achieving a compression rate of about 83\%.
 When truncating to zero digits, we see a clear negative impact in the NDCG values, indicating that the best tradeoff was achieved in fact when $d=1$.
 
-%% References
-
-%%
-
-%% Following citation commands can be used in the body text:
-
-%% Usage of \cite is as follows:
-
-%% \cite{key} ==>> [#]
-
-%% \cite[chap. 2]{key} ==>> [#, chap. 2]
-
-%%
-
-
-%% References with bibTeX database:
-
-
 \section{Conclusion}
 
 We proposed the UTI-LambdaMART, a modified LambdaMART ranking algorithm, in order to generate UTI scores for each pair of query term and document at indexing time.
@@ -512,11 +406,6 @@ We also investigated two scenarios, the use of UTI-LambdaMART as the base ranker
 in gains of performance when comparing to a system that adopts BM25 as the base ranker. In the second scenario, UTI-LambdaMART is directly applied as the top ranker, and we show that, even taking only features available at indexing times, it produces rankings with quality closer to learn to rank methods adopted at query processing times, but with the advantage of adopting a very simple ranking
 strategy at query processing times.
 
-
-%The experimental results presented in this work indicate that UTI-LambdaMART produces %quality results closer to the ones produced by UTI-GP, while significantly reduces %the time required for learning the model. Further, in the experiments with LETOR, we %achieved higher compression results than those achieved by \cite{costa2012lepref}.
-%We also investigated two scenarios where UTI values can be used in a practical web %search, considering both, the use of UTI-LambdaMART as the base ranker and using %UTI-LambdaMART as top ranker. In the first, UTI values are able to produce high %quality first cut rankings that are closer to the final document order, reducing the %amount of documents necessary to be inspected in the top ranker, and resulting
-%in gains of performance. In the second scenario, UTI-LambdaMART is directly applied %as the top ranker, and we show that, even taking only features available at indexing %times, it produces rankings with quality closer to learn to rank methods adopted at %query processing times, but with the advantage of adopting a very simple ranking
-%strategy at query processing times.
 
 Our future investigations are to know which results will be achieved when the UTI score is used as a feature in the learning process and applied to traditional L2R approaches. Finally, we plan to further evaluate the possible gains in query processing times generated by the use of   UTI-LambdaMART.
 
